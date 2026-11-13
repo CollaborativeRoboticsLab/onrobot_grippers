@@ -73,34 +73,31 @@ recorded.
 
 ## Decisions required before hardware implementation
 
-Obtain from the owner: first gripper model(s), Compute Box and firmware versions,
-network topology, single/dual tool changer and connection, access to the relevant
-vendor protocol/manual and hardware, intended ROS consumers, and safety/risk
-assessment. Decide which model is the first acceptance target; do not infer
-that RG and VG or different firmware versions share register maps. Confirm
-whether physical stop, cancellation, vacuum release, and power reset are
-supported and safe for that setup. Block hardware writes if these are unknown.
-Record choices, evidence, and unsupported combinations in the documentation.
+RG2 is selected as the first acceptance target. Obtain the Compute Box and
+firmware versions, network topology, tool-changer topology, relevant vendor
+protocol/manual and hardware access, intended ROS consumers, and safety/risk
+assessment. Do not infer that RG and VG or different firmware versions share
+register maps. Confirm whether physical stop, cancellation, vacuum release, and
+power reset are supported and safe for that setup. Block hardware writes if
+these are unknown. Record choices, evidence, and unsupported combinations.
 
 ## Phases and acceptance gates
 
-1. **Inventory and protocol evidence.** Inspect the prioritized upstream at a
-   pinned commit, package metadata, launch files, dependencies, and available
-   licenses. Cross-check addressing, register maps, scaling, units, limits,
-   status bits, and command sequencing against the vendor documentation for
-   the selected firmware. Create a traceable model/firmware capability matrix;
-   label any unsupported or unverified behavior. Exit: owner approves the first
-   model and the evidence is sufficient for a testable protocol contract.
-2. **Workspace and interfaces.** Create conventional Jazzy packages and
-  manifests; use `ament_cmake` packages and C++ ROS nodes. Keep generated ROS
-  interfaces in an `ament_cmake` interface package. Separate protocol
-  transport, model-specific codec/state logic, and ROS adapters so the layers
-  can be tested independently. Choose
-   standard ROS interfaces where they faithfully express the chosen device;
-   otherwise specify typed custom interfaces, units, bounds, outcomes,
-   namespacing, timestamps, and versioning. Define concurrency, timeouts,
-   feedback, cancellation and ownership semantics before implementing them.
-   Exit: documented interface contract and successful clean colcon build.
+1. **Inventory and protocol evidence.** Obtain the exact RG2 Compute Box and
+  firmware versions, tool-changer topology, and vendor manual. Cross-check
+  addressing, register maps, scaling, units, limits, status bits, and command
+  sequencing against that documentation. Create a traceable model/firmware
+  capability matrix and label unsupported or unverified behavior. Exit:
+  evidence is sufficient for a testable protocol contract and owner approval.
+2. **Workspace and interfaces.** Complete conventional Jazzy packaging and
+  dependency exports for the existing C++ node and transport. Keep generated
+  ROS interfaces in an `ament_cmake` interface package. Add model-specific
+  codec/state logic and ROS adapters as separate, independently testable
+  layers. Choose standard ROS interfaces where they faithfully express the
+  device; otherwise specify typed custom interfaces, units, bounds, outcomes,
+  namespacing, timestamps, and versioning. Define concurrency, timeouts,
+  feedback, cancellation, and ownership semantics before implementation.
+  Exit: documented interface contract and successful clean colcon build.
     RG2-first C++ interface proposal: use Jazzy's
     `control_msgs/action/GripperCommand`, whose goal carries a target gap
     (`position`) and `max_effort`, and whose feedback/result carry measured
@@ -112,14 +109,12 @@ Record choices, evidence, and unsupported combinations in the documentation.
     flags, or failure, timeout, cancellation, and concurrent-goal semantics.
     Verify those against the exact firmware and vendor documentation before
     implementing a hardware adapter. RG6 remains a separate follow-up target.
-3. **Offline protocol core.** Select and declare a Jazzy/Ubuntu-compatible
-    C++ Modbus library/version after verifying its API and license. Implement
-    bounded transport operations, explicit
-   connection and protocol errors, validated conversions, and a single
-   serialized access path to each physical endpoint. Provide an injectable fake
-   transport. Exit: unit tests cover known register vectors, boundaries, status
-   decoding, malformed responses, timeouts, disconnects, and concurrency
-   without requiring network or hardware.
+3. **Offline protocol core.** Add model-specific vectors, status decoding, and
+  approved protocol tests based on the verified RG2 protocol contract. Extend
+  malformed-response coverage as required by that contract. Keep tests
+  independent of real hardware. Do not add write operations before protocol
+  evidence and safety approval. Exit: verified behavior is covered by
+  deterministic offline tests.
 4. **ROS adapter and bringup.** Expose the agreed command and state interfaces
    with model and endpoint parameters, clear diagnostics, configurable polling,
    bounded execution, and orderly shutdown. Reject invalid or unsupported

@@ -1,4 +1,5 @@
 #include "onrobot_control/command_validation.hpp"
+#include "onrobot_control/modbus_tcp_transport.hpp"
 
 #include <iostream>
 #include <limits>
@@ -49,6 +50,9 @@ int main()
   using onrobot_control::GoalValidationError;
   using onrobot_control::GripperGoal;
   using onrobot_control::GripperLimits;
+  using onrobot_control::ModbusTcpConfig;
+  using onrobot_control::ModbusTcpTransport;
+  using onrobot_control::TransportError;
 
   const GripperLimits limits{0.1, 100.0};
   expect_valid({0.0, 1.0}, limits, "minimum position and positive effort are valid");
@@ -72,6 +76,30 @@ int main()
     "zero position limit is rejected");
   expect_error({0.05, 10.0}, {0.1, std::numeric_limits<double>::infinity()},
     GoalValidationError::invalid_limits, "non-finite effort limit is rejected");
+
+  ModbusTcpTransport invalid_config({"", 502, 65, std::chrono::milliseconds{1000}});
+  expect(invalid_config.connect().error == TransportError::invalid_configuration,
+    "empty host is rejected before connecting");
+
+  ModbusTcpTransport invalid_port({"127.0.0.1", 0, 65, std::chrono::milliseconds{1000}});
+  expect(invalid_port.connect().error == TransportError::invalid_configuration,
+    "zero TCP port is rejected before connecting");
+
+  ModbusTcpTransport invalid_timeout({"127.0.0.1", 502, 65, std::chrono::milliseconds{0}});
+  expect(invalid_timeout.connect().error == TransportError::invalid_configuration,
+    "zero response timeout is rejected before connecting");
+
+  ModbusTcpTransport disconnected({"127.0.0.1", 502, 65, std::chrono::milliseconds{1000}});
+  expect(disconnected.read_holding_registers(0, 1).error == TransportError::not_connected,
+    "read without a connection returns an explicit error");
+  expect(disconnected.read_holding_registers(0, 0).error == TransportError::invalid_request,
+    "zero-length register read is rejected");
+  expect(disconnected.read_holding_registers(0, MODBUS_MAX_READ_REGISTERS + 1).error ==
+    TransportError::invalid_request, "oversized register read is rejected");
+  expect(disconnected.read_holding_registers(65535, 2).error == TransportError::invalid_request,
+    "register address overflow is rejected");
+  disconnected.disconnect();
+  disconnected.disconnect();
 
   return failures == 0 ? 0 : 1;
 }

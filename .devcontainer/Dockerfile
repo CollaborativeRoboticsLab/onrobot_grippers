@@ -7,6 +7,7 @@ RUN apt-get update \
         build-essential \
         cmake \
         git \
+        libmodbus-dev \
         python3-colcon-common-extensions \
         python3-pytest \
         python3-rosdep \
