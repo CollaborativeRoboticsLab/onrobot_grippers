@@ -1,0 +1,30 @@
+{
+  "name": "OnRobot Grippers - ROS 2 Jazzy",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "ubuntu",
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}"
+  },
+  "runArgs": [
+    "--privileged",
+    "--network=host",
+    "--gpus",
+    "all"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/colcon_ws/src/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/ubuntu/colcon_ws",
+  "mounts": [
+    "source=${localEnv:HOME}/.bash_history,target=/home/ubuntu/.bash_history,type=bind",
+    "source=${localWorkspaceFolder}/.vscode,target=/home/ubuntu/colcon_ws/.vscode,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-vscode.cpptools"
+      ]
+    }
+  }
+}
