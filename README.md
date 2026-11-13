@@ -8,7 +8,7 @@ for the proposed architecture, safety requirements, and review gates.
 
 Open this repository in VS Code and select **Dev Containers: Reopen in Container**.
 The image uses ROS 2 Jazzy on Ubuntu 24.04, Python and C++ build tools, colcon,
-rosdep, and pytest. The repository is mounted under `~/colcon_ws/src/`; the
+rosdep, pytest, and Xacro. The repository is mounted under `~/colcon_ws/src/`; the
 VS Code workspace opens at `~/colcon_ws` so that sibling packages can be added.
 New interactive Bash terminals source the workspace overlay if built, or the
 Jazzy underlay otherwise.

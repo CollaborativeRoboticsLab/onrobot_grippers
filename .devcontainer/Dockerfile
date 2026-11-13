@@ -12,6 +12,7 @@ RUN apt-get update \
         python3-rosdep \
         python3-venv \
         python3-vcstool \
+        ros-jazzy-xacro \
         sudo \
     && rm -rf /var/lib/apt/lists/* \
     && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}" \

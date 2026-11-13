@@ -30,6 +30,47 @@ safety behavior is correct. Record the exact reference commit and license for
 any adopted material. Do not copy bundled vendor or mesh assets without checking
 their separate provenance and redistribution terms.
 
+### Pinned Kinisi snapshot: static findings
+
+Inspected commit `a83cd730e33828abf4e2c22fb0fe3c9c522a8ec4` on 2026-11-13.
+This was a source-tree review only; it was not built, tested, or connected to
+hardware.
+
+* The README calls this a ROS 2 Humble port and says the VG packages were added
+  to the RG port. The tree separates RG/VG control, description, Modbus TCP,
+  and message packages. The README also retains ROS 1 instructions and package
+  material, so it is not a clean Jazzy baseline.
+* Both RG and VG Modbus transports import
+  `pymodbus.client.sync.ModbusTcpClient`, while their package manifests do not
+  declare a `pymodbus` dependency. Treat this as a dependency/API compatibility
+  warning; no current Jazzy compatibility conclusion has been established.
+* The RG `SetCommand` service accepts a string and declares `success` and
+  `message` response fields, but the inspected server currently returns `None`
+  for both fields (`TODO: implement`). Its command parsing is not a suitable
+  verified public contract to reuse as-is.
+* The RG transport contains a Compute Box power-cycle write path. Do not carry
+  it forward without vendor documentation and owner approval for the selected
+  hardware and safety setup.
+* The root LICENSE and both RG/VG description package manifests identify MIT;
+  no separate mesh license or source notice was found in the pinned description
+  trees. Sample mesh history records commit `aa7874ff1f6c8e1212f5e94f0773d474b7aded45`
+  by Takuya Kiyokawa as a package reorganization, but does not establish the
+  original CAD authorship. The description packages were transferred with the
+  upstream license notice; mesh provenance and model accuracy remain unverified.
+
+This snapshot review does not satisfy phase 1's protocol-evidence gate. The
+RG2 is selected as the first target, but the firmware and vendor protocol
+evidence are not available, and no hardware validation has been supplied.
+
+### Owner input status
+
+As of 2026-11-13, the owner has selected RG2 as the first acceptance target,
+with RG6 deferred. Compute Box and firmware versions, tool-changer topology, and
+vendor manual revision are unknown. “Latest” is not a sufficiently specific
+firmware target for a capability matrix or protocol contract. Do not enable
+hardware writes until these details and the required safety approval are
+recorded.
+
 ## Decisions required before hardware implementation
 
 Obtain from the owner: first gripper model(s), Compute Box and firmware versions,
@@ -51,18 +92,29 @@ Record choices, evidence, and unsupported combinations in the documentation.
    label any unsupported or unverified behavior. Exit: owner approves the first
    model and the evidence is sufficient for a testable protocol contract.
 2. **Workspace and interfaces.** Create conventional Jazzy packages and
-   manifests; keep generated ROS interfaces in an `ament_cmake` interface
-   package and Python nodes in `ament_python` packages. Separate protocol
-   transport, model-specific codec/state logic, and ROS adapters so the latter
-   can later be replaced by C++ without changing the public contract. Choose
+  manifests; use `ament_cmake` packages and C++ ROS nodes. Keep generated ROS
+  interfaces in an `ament_cmake` interface package. Separate protocol
+  transport, model-specific codec/state logic, and ROS adapters so the layers
+  can be tested independently. Choose
    standard ROS interfaces where they faithfully express the chosen device;
    otherwise specify typed custom interfaces, units, bounds, outcomes,
    namespacing, timestamps, and versioning. Define concurrency, timeouts,
    feedback, cancellation and ownership semantics before implementing them.
    Exit: documented interface contract and successful clean colcon build.
+    RG2-first C++ interface proposal: use Jazzy's
+    `control_msgs/action/GripperCommand`, whose goal carries a target gap
+    (`position`) and `max_effort`, and whose feedback/result carry measured
+    position and effort plus `stalled` and `reached_goal` flags. The standard
+    action specifies position in meters and feedback effort in Newtons. Declare
+    `control_msgs` as a package dependency and verify a clean Jazzy build; it is
+    not installed in the current container. This proposal does not define RG2
+    bounds or conversions, which hardware states can truthfully populate the
+    flags, or failure, timeout, cancellation, and concurrent-goal semantics.
+    Verify those against the exact firmware and vendor documentation before
+    implementing a hardware adapter. RG6 remains a separate follow-up target.
 3. **Offline protocol core.** Select and declare a Jazzy/Ubuntu-compatible
-   Modbus library/version after verifying its API and license; do not inherit
-   old pymodbus pins blindly. Implement bounded transport operations, explicit
+    C++ Modbus library/version after verifying its API and license. Implement
+    bounded transport operations, explicit
    connection and protocol errors, validated conversions, and a single
    serialized access path to each physical endpoint. Provide an injectable fake
    transport. Exit: unit tests cover known register vectors, boundaries, status
@@ -90,12 +142,6 @@ Record choices, evidence, and unsupported combinations in the documentation.
    Treat dual grippers, robot integration, models, RViz, simulation, MoveIt
    and ros2_control as separately scoped milestones, not prerequisites for a
    first driver. Do not imply simulation validates physical safety.
-7. **C++ migration.** After the Python behavior and interfaces are stable,
-   port transport/model logic and ROS adapter incrementally. Run the same
-   protocol vectors, integration scenarios, and hardware acceptance against
-   both implementations. Preserve interface names, units, documented error
-   semantics and configuration, or explicitly version breaking changes.
-   Avoid promising real-time behavior without a separate design and evidence.
 
 ## Engineering and review guidelines
 
