@@ -30,11 +30,20 @@ safety behavior is correct. Record the exact reference commit and license for
 any adopted material. Do not copy bundled vendor or mesh assets without checking
 their separate provenance and redistribution terms.
 
+Secondary repository comparisons and dispositions are recorded in
+[`upstream-comparison.md`](upstream-comparison.md). Overlapping forks were not
+merged; the cwsfa code was not copied because no license was found.
+
 ### Pinned Kinisi snapshot: static findings
 
 Inspected commit `a83cd730e33828abf4e2c22fb0fe3c9c522a8ec4` on 2026-11-13.
 This was a source-tree review only; it was not built, tested, or connected to
 hardware.
+
+The complete tracked snapshot is staged under
+[`onrobot_ros/upstream/kinisi-a83cd73`](../onrobot_ros/upstream/kinisi-a83cd73)
+with its MIT license and original README. It is excluded from colcon discovery
+while the imported packages are reviewed and refactored for Jazzy.
 
 * The README calls this a ROS 2 Humble port and says the VG packages were added
   to the RG port. The tree separates RG/VG control, description, Modbus TCP,
@@ -89,14 +98,20 @@ these are unknown. Record choices, evidence, and unsupported combinations.
   sequencing against that documentation. Create a traceable model/firmware
   capability matrix and label unsupported or unverified behavior. Exit:
   evidence is sufficient for a testable protocol contract and owner approval.
-2. **Workspace and interfaces.** Complete conventional Jazzy packaging and
-  dependency exports for the existing C++ node and transport. Keep generated
-  ROS interfaces in an `ament_cmake` interface package. Add model-specific
-  codec/state logic and ROS adapters as separate, independently testable
-  layers. Choose standard ROS interfaces where they faithfully express the
-  device; otherwise specify typed custom interfaces, units, bounds, outcomes,
-  namespacing, timestamps, and versioning. Define concurrency, timeouts,
-  feedback, cancellation, and ownership semantics before implementation.
+2. **Workspace and interfaces.** The combined `onrobot_msgs` ament interface
+  package contains the upstream RG/VG messages and one shared service. Active
+  C++ RG/VG command servers publish those output messages through the shared
+  `SetCommand` service, and a status listener consumes both input topics. These
+  are ROS-facing nodes only: they do not connect to a device or perform Modbus
+  writes. The old interactive CLI nodes are not retained; use the service
+  interface instead. The old TCP nodes remain excluded until the protocol and
+  firmware gates are met. Continue with model-specific codec/state logic and
+  the hardware ROS adapter as separate, independently testable layers. Choose
+  standard ROS interfaces where they
+  faithfully express the device; otherwise specify typed custom interfaces,
+  units, bounds, outcomes, namespacing, timestamps, and versioning. Verify the
+  imported interface semantics against the selected firmware and define
+  concurrency, timeouts, feedback, cancellation, and ownership semantics.
   Exit: documented interface contract and successful clean colcon build.
     RG2-first C++ interface proposal: use Jazzy's
     `control_msgs/action/GripperCommand`, whose goal carries a target gap

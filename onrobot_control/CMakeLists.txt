@@ -4,6 +4,7 @@ project(onrobot_control LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(onrobot_msgs REQUIRED)
 pkg_check_modules(LIBMODBUS REQUIRED IMPORTED_TARGET libmodbus)
 
 include(CTest)
@@ -22,6 +23,15 @@ add_executable(onrobot_control_node src/control.cpp)
 target_link_libraries(onrobot_control_node onrobot_control_core)
 ament_target_dependencies(onrobot_control_node rclcpp)
 
+add_executable(onrobot_rg_command_server src/rg_command_server.cpp)
+ament_target_dependencies(onrobot_rg_command_server rclcpp onrobot_msgs)
+
+add_executable(onrobot_vg_command_server src/vg_command_server.cpp)
+ament_target_dependencies(onrobot_vg_command_server rclcpp onrobot_msgs)
+
+add_executable(onrobot_status_listener src/status_listener.cpp)
+ament_target_dependencies(onrobot_status_listener rclcpp onrobot_msgs)
+
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES LICENSE DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../onrobot_ros/config/"
@@ -31,7 +41,13 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../onrobot_ros/launch/"
   DESTINATION share/${PROJECT_NAME}/launch
 )
 install(TARGETS onrobot_control_core EXPORT export_onrobot_control)
-install(TARGETS onrobot_control_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS
+  onrobot_control_node
+  onrobot_rg_command_server
+  onrobot_vg_command_server
+  onrobot_status_listener
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   add_executable(test_command_validation test/command_validation_test.cpp)

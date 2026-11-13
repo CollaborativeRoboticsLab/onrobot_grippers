@@ -1,5 +1,6 @@
 # dev
 .vscode/
+/temp/
 
 __pycache__
 .venv
@@ -8,6 +9,8 @@ venv
 devel/
 logs/
 build/
+install/
+log/
 bin/
 lib/
 msg_gen/
