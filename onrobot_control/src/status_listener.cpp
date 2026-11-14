@@ -1,9 +1,9 @@
-#include <cstdint>
 #include <memory>
 #include <sstream>
 
 #include <rclcpp/rclcpp.hpp>
 
+#include "onrobot_control/status_decoder.hpp"
 #include "onrobot_msgs/msg/on_robot_rg_input.hpp"
 #include "onrobot_msgs/msg/on_robot_vg_input.hpp"
 
@@ -23,17 +23,19 @@ public:
 private:
   void report_rg(const onrobot_msgs::msg::OnRobotRGInput& status)
   {
-    const auto flags = status.g_sta;
+    const auto decoded = onrobot_control::decode_rg_status(
+      status.g_fof, status.g_gwd, status.g_sta, status.g_wdf);
     std::ostringstream text;
-    text << "RG width=" << status.g_gwd / 10.0 << " mm, width_with_offset=" << status.g_wdf / 10.0
-         << " mm, fingertip_offset=" << static_cast<std::int16_t>(status.g_fof) / 10.0 << " mm"
-         << ", busy=" << static_cast<bool>(flags & (1U << 0))
-         << ", grip_detected=" << static_cast<bool>(flags & (1U << 1))
-         << ", safety_switch_1=" << static_cast<bool>(flags & (1U << 2))
-         << ", safety_circuit_1=" << static_cast<bool>(flags & (1U << 3))
-         << ", safety_switch_2=" << static_cast<bool>(flags & (1U << 4))
-         << ", safety_circuit_2=" << static_cast<bool>(flags & (1U << 5))
-         << ", safety_error=" << static_cast<bool>(flags & (1U << 6));
+    text << "RG width=" << decoded.width_tenths_mm / 10.0 << " mm, width_with_offset="
+         << decoded.width_with_offset_tenths_mm / 10.0 << " mm, fingertip_offset="
+         << decoded.fingertip_offset_tenths_mm / 10.0 << " mm"
+         << ", busy=" << decoded.busy
+         << ", grip_detected=" << decoded.grip_detected
+         << ", safety_switch_1=" << decoded.safety_switch_1
+         << ", safety_circuit_1=" << decoded.safety_circuit_1
+         << ", safety_switch_2=" << decoded.safety_switch_2
+         << ", safety_circuit_2=" << decoded.safety_circuit_2
+         << ", safety_error=" << decoded.safety_error;
     RCLCPP_INFO(get_logger(), "%s", text.str().c_str());
   }
 
