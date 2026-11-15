@@ -9,7 +9,8 @@ work.
 
 Open this repository in VS Code and select **Dev Containers: Reopen in Container**.
 The image uses ROS 2 Jazzy on Ubuntu 24.04, Python and C++ build tools, colcon,
-rosdep, pytest, Xacro, and libmodbus 3.1.10. The repository is mounted under `~/colcon_ws/src/`; the
+rosdep, pytest, Xacro, Gazebo Harmonic through `ros_gz`, `gz_ros2_control`, and
+libmodbus 3.1.10. The repository is mounted under `~/colcon_ws/src/`; the
 VS Code workspace opens at `~/colcon_ws` so that sibling packages can be added.
 New interactive Bash terminals source the workspace overlay if built, or the
 Jazzy underlay otherwise.
@@ -19,7 +20,7 @@ workspace root:
 
 ```bash
 rosdep update
-rosdep install --from-paths src --ignore-src --rosdistro jazzy -y
+rosdep install --from-paths $(colcon list --paths-only) --ignore-src --rosdistro jazzy -y
 colcon build --symlink-install
 colcon test
 colcon test-result --verbose
@@ -34,12 +35,38 @@ The single and dual RG command servers select gripper models at startup.
 Their `gripper_model`, `gripper_primary`, and `gripper_secondary` parameters
 are read-only at runtime; restart the corresponding node to change a model.
 
+The `onrobot_gazebo` package launches RG2, RG6, VG10, or the four-cup VGC10 in
+Gazebo Harmonic. RG2 and RG6 use ROS 2 control; VG10 and VGC10 are fixed-link
+models for visualization and scene testing. Simulation is for software testing
+only and does not validate physical gripper behavior or safety.
+
+Launch either model with the default GUI, or run the simulation headlessly:
+
+```bash
+ros2 launch onrobot_gazebo bringup.launch.py gripper:=rg2
+ros2 launch onrobot_gazebo bringup.launch.py gripper:=rg6
+ros2 launch onrobot_gazebo bringup.launch.py gripper:=vg10
+ros2 launch onrobot_gazebo bringup.launch.py gripper:=vgc10
+ros2 launch onrobot_gazebo bringup.launch.py gripper:=rg2 gz_args:="-r -s"
+```
+
+MoveIt examples are available for all four grippers. RG2/RG6 launch standalone
+planning and visualization demos; these do not execute trajectories. VG10/VGC10
+are fixed-link tools, so their launches provide visualization for attachment
+work, while the host arm supplies the planning group and end-effector semantics.
+
+```bash
+ros2 launch rg2_moveit_config demo.launch.py
+ros2 launch rg6_moveit_config demo.launch.py
+ros2 launch vg10_moveit_config visualize.launch.py
+ros2 launch vgc10_moveit_config visualize.launch.py
+```
+
 The container uses Linux host networking for ROS 2 discovery and access to a
 Compute Box on a reachable network. It runs in privileged mode, requests all
 GPUs, adds host group ID `992`, forwards `DISPLAY`, and bind-mounts the host's
 `~/.bash_history` and this repository's `.vscode` directory. These settings
 grant broad host access and share shell history with the container; use them
-only with trusted code and networks and choose `ROS_DOMAIN_ID` appropriately.
 Before opening the container, ensure the bind-mount sources exist:
 
 ```bash
@@ -51,9 +78,9 @@ The host must have a working Docker GPU runtime and accessible GPUs; group ID
 `992` must correspond to the intended host device group. Host networking,
 GPU access, and the Linux-specific mounts need separate validation on Docker
 Desktop or non-Linux hosts. Forwarding `DISPLAY` alone does not configure X11
-socket access or authorization. RViz, MoveIt, simulation, and other optional
-stacks are not installed. No command is automatically sent to hardware on
-container startup.
+socket access or authorization. Gazebo Harmonic, RViz, MoveIt 2, and the
+joint-state publisher GUI are installed. No command is automatically sent to
+hardware on container startup.
 
 # Salute To
 

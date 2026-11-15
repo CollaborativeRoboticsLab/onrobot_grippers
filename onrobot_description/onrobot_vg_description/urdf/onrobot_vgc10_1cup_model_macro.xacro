@@ -12,9 +12,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vgc10/visual/suction_cup_1cup.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.9 0.9 0.9 1" />
-        </material>
+        <material name="onrobot_vg_cup_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -23,6 +21,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}suction">
+      <material>Gazebo/White</material>
+    </gazebo>
   </xacro:macro>
 
   <xacro:macro name="suction_joint" params="prefix">

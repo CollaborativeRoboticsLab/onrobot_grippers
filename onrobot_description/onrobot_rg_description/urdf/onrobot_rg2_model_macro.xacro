@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:include filename="$(find onrobot_rg_description)/urdf/onrobot_rg2_transmission.xacro" />
   <xacro:include filename="$(find onrobot_rg_description)/urdf/onrobot_rg2_gazebo.xacro" />
 
   <xacro:macro name="outer_knuckle" params="prefix fingerprefix">
@@ -15,9 +14,7 @@
         <geometry>
           <mesh filename="package://onrobot_rg_description/meshes/rg2/visual/outer_knuckle.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.8 0.8 0.8 1" />
-        </material>
+        <material name="onrobot_rg_light_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -31,7 +28,7 @@
       <mu1>0.1</mu1>
       <mu2>0.1</mu2>
       <selfCollide>false</selfCollide>
-      <material>Gazebo/White</material>
+      <material>Gazebo/Grey</material>
     </gazebo>
   </xacro:macro>
 
@@ -47,9 +44,7 @@
         <geometry>
           <mesh filename="package://onrobot_rg_description/meshes/rg2/visual/inner_knuckle.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.8 0.8 0.8 1" />
-        </material>
+        <material name="onrobot_rg_light_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -63,7 +58,7 @@
       <mu1>0.1</mu1>
       <mu2>0.1</mu2>
       <selfCollide>false</selfCollide>
-      <material>Gazebo/White</material>
+      <material>Gazebo/Grey</material>
     </gazebo>
   </xacro:macro>
 
@@ -79,9 +74,7 @@
         <geometry>
           <mesh filename="package://onrobot_rg_description/meshes/rg2/visual/inner_finger.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.1 0.1 0.1 1" />
-        </material>
+        <material name="onrobot_rg_black" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -156,7 +149,6 @@
     <xacro:finger_links prefix="${prefix}" fingerprefix="right"/>
     <xacro:finger_joint prefix="${prefix}"/>
     <xacro:right_outer_knuckle_joint prefix="${prefix}"/>
-    <xacro:onrobot_rg2_transmission prefix="${prefix}"/>
     <xacro:onrobot_rg2_gazebo prefix="${prefix}"/>
   </xacro:macro>
 </robot>

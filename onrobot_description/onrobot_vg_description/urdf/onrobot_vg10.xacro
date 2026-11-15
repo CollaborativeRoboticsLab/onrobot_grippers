@@ -12,9 +12,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vg10/visual/base_link.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.8 0.8 0.8 1" />
-        </material>
+        <material name="onrobot_vg_body_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -23,6 +21,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}onrobot_vg10_base_link">
+      <material>Gazebo/Grey</material>
+    </gazebo>
   </xacro:macro>
 
   <xacro:macro name="finger_links" params="prefix">

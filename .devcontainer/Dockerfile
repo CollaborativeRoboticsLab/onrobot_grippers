@@ -19,6 +19,13 @@ RUN apt-get update \
         python3-rosdep \
         python3-venv \
         python3-vcstool \
+        ros-jazzy-gz-ros2-control \
+        ros-jazzy-joint-state-publisher-gui \
+        ros-jazzy-moveit \
+        ros-jazzy-rmw-cyclonedds-cpp \
+        ros-jazzy-ros-gz \
+        ros-jazzy-ros-gz-bridge \
+        ros-jazzy-ros2-controllers \
         ros-jazzy-xacro \
         sudo \
     && rm -rf /var/lib/apt/lists/* \

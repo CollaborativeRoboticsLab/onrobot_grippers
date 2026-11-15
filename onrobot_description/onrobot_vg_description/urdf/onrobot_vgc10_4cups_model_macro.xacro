@@ -12,9 +12,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vgc10/visual/suction_cup_4cups.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.9 0.9 0.9 1" />
-        </material>
+        <material name="onrobot_vg_cup_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -23,6 +21,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}suction1">
+      <material>Gazebo/White</material>
+    </gazebo>
     <link name="${prefix}suction2">
       <inertial>
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
@@ -34,9 +35,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vgc10/visual/suction_cup_4cups.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.9 0.9 0.9 1" />
-        </material>
+        <material name="onrobot_vg_cup_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -45,6 +44,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}suction2">
+      <material>Gazebo/White</material>
+    </gazebo>
     <link name="${prefix}suction3">
       <inertial>
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
@@ -56,9 +58,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vgc10/visual/suction_cup_4cups.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.9 0.9 0.9 1" />
-        </material>
+        <material name="onrobot_vg_cup_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -67,6 +67,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}suction3">
+      <material>Gazebo/White</material>
+    </gazebo>
     <link name="${prefix}suction4">
       <inertial>
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
@@ -78,9 +81,7 @@
         <geometry>
           <mesh filename="package://onrobot_vg_description/meshes/vgc10/visual/suction_cup_4cups.stl" />
         </geometry>
-        <material name="">
-          <color rgba="0.9 0.9 0.9 1" />
-        </material>
+        <material name="onrobot_vg_cup_gray" />
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -89,6 +90,9 @@
         </geometry>
       </collision>
     </link>
+    <gazebo reference="${prefix}suction4">
+      <material>Gazebo/White</material>
+    </gazebo>
     <link name="${prefix}suction" />
   </xacro:macro>
 

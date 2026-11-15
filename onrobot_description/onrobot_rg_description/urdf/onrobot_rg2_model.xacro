@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <robot name="onrobot_rg2_model" xmlns:xacro="http://ros.org/wiki/xacro">
+  <material name="onrobot_rg_light_gray"><color rgba="0.8 0.8 0.8 1" /></material>
+  <material name="onrobot_rg_black"><color rgba="0.1 0.1 0.1 1" /></material>
   <xacro:include filename="$(find onrobot_rg_description)/urdf/onrobot_rg2_model_macro.xacro" />
   <xacro:onrobot_rg2 prefix=""/>
 </robot>

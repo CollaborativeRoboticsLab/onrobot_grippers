@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name="onrobot_rg6_model">
+  <group name="gripper">
+    <joint name="finger_joint" />
+    <link name="left_outer_knuckle" />
+    <link name="left_inner_knuckle" />
+    <link name="left_inner_finger" />
+    <link name="right_outer_knuckle" />
+    <link name="right_inner_knuckle" />
+    <link name="right_inner_finger" />
+    <link name="grip_target_frame" />
+  </group>
+  <group_state name="open" group="gripper">
+    <joint name="finger_joint" value="0.628319" />
+  </group_state>
+  <group_state name="closed" group="gripper">
+    <joint name="finger_joint" value="-0.628319" />
+  </group_state>
+  <passive_joint name="left_inner_knuckle_joint" />
+  <passive_joint name="left_inner_finger_joint" />
+  <passive_joint name="right_outer_knuckle_joint" />
+  <passive_joint name="right_inner_knuckle_joint" />
+  <passive_joint name="right_inner_finger_joint" />
+  <disable_collisions link1="onrobot_rg6_base_link" link2="left_outer_knuckle" reason="Adjacent" />
+  <disable_collisions link1="onrobot_rg6_base_link" link2="left_inner_knuckle" reason="Adjacent" />
+  <disable_collisions link1="onrobot_rg6_base_link" link2="right_outer_knuckle" reason="Adjacent" />
+  <disable_collisions link1="onrobot_rg6_base_link" link2="right_inner_knuckle" reason="Adjacent" />
+  <disable_collisions link1="left_outer_knuckle" link2="left_inner_finger" reason="Adjacent" />
+  <disable_collisions link1="left_inner_knuckle" link2="left_inner_finger" reason="Adjacent" />
+  <disable_collisions link1="right_outer_knuckle" link2="right_inner_finger" reason="Adjacent" />
+  <disable_collisions link1="right_inner_knuckle" link2="right_inner_finger" reason="Adjacent" />
+</robot>
