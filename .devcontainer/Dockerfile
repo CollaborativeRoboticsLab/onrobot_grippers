@@ -11,6 +11,7 @@ RUN apt-get update && apt-get upgrade -y \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
+        clang-format \
         cmake \
         git \
         libmodbus-dev \
@@ -20,6 +21,7 @@ RUN apt-get update \
         python3-venv \
         python3-vcstool \
         ros-jazzy-gz-ros2-control \
+        ros-jazzy-diagnostic-msgs \
         ros-jazzy-joint-state-publisher-gui \
         ros-jazzy-moveit \
         ros-jazzy-rmw-cyclonedds-cpp \

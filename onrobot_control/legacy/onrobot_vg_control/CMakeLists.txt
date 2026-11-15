@@ -13,9 +13,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   nodes/OnRobotVGSimpleController.py
-  nodes/OnRobotVGStatusListener.py
   nodes/OnRobotVGTcpNode.py
-  nodes/OnRobotVGSimpleControllerServer.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

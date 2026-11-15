@@ -1,0 +1,41 @@
+name: ROS 2 Jazzy CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format libmodbus-dev python3-colcon-common-extensions
+      - name: Install ROS dependencies
+        run: |
+          rosdep update
+          rosdep install --from-paths . --ignore-src --rosdistro jazzy -y
+      - name: Check C++ formatting
+        run: |
+          clang-format --dry-run --Werror \
+            onrobot_control/include/onrobot_control/modbus_tcp_transport.hpp \
+            onrobot_control/include/onrobot_control/read_only_register_poller.hpp \
+            onrobot_control/include/onrobot_control/read_only_status_adapter.hpp \
+            onrobot_control/src/read_only_status_adapter.cpp \
+            onrobot_control/src/read_only_status_adapter_main.cpp \
+            onrobot_control/test/read_only_register_poller_test.cpp \
+            onrobot_control/test/read_only_status_adapter_test.cpp
+      - name: Build workspace
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --symlink-install --event-handlers console_direct+
+      - name: Test workspace
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon test --event-handlers console_direct+
+          colcon test-result --verbose

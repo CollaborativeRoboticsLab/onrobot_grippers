@@ -6,6 +6,8 @@ find_package(PkgConfig REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcl_interfaces REQUIRED)
 find_package(onrobot_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(Threads REQUIRED)
 pkg_check_modules(LIBMODBUS REQUIRED IMPORTED_TARGET libmodbus)
 
 include(CTest)
@@ -23,6 +25,17 @@ target_link_libraries(onrobot_control_core INTERFACE modbus)
 add_executable(onrobot_control_node src/control.cpp)
 target_link_libraries(onrobot_control_node onrobot_control_core)
 ament_target_dependencies(onrobot_control_node rclcpp)
+
+add_library(onrobot_read_only_status_adapter src/read_only_status_adapter.cpp)
+target_link_libraries(onrobot_read_only_status_adapter onrobot_control_core Threads::Threads)
+ament_target_dependencies(onrobot_read_only_status_adapter
+  rclcpp rcl_interfaces onrobot_msgs diagnostic_msgs)
+
+add_executable(onrobot_read_only_status_adapter_node src/read_only_status_adapter_main.cpp)
+set_target_properties(onrobot_read_only_status_adapter_node PROPERTIES
+  OUTPUT_NAME onrobot_read_only_status_adapter)
+target_link_libraries(onrobot_read_only_status_adapter_node onrobot_read_only_status_adapter)
+ament_target_dependencies(onrobot_read_only_status_adapter_node rclcpp)
 
 add_executable(onrobot_rg_command_server src/rg_command_server.cpp)
 target_link_libraries(onrobot_rg_command_server onrobot_control_core)
@@ -55,6 +68,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../onrobot_ros/launch/"
 install(TARGETS onrobot_control_core EXPORT export_onrobot_control)
 install(TARGETS
   onrobot_control_node
+  onrobot_read_only_status_adapter
+  onrobot_read_only_status_adapter_node
   onrobot_rg_command_server
   onrobot_vg_command_server
   onrobot_status_listener
@@ -89,10 +104,26 @@ if(BUILD_TESTING)
   target_link_libraries(test_modbus_tcp_transport PRIVATE onrobot_control_core)
   target_compile_options(test_modbus_tcp_transport PRIVATE -Wall -Wextra -Wpedantic)
   add_test(NAME modbus_tcp_transport COMMAND test_modbus_tcp_transport)
+
+  add_executable(test_read_only_register_poller test/read_only_register_poller_test.cpp)
+  target_link_libraries(test_read_only_register_poller PRIVATE onrobot_control_core Threads::Threads)
+  target_compile_options(test_read_only_register_poller PRIVATE -Wall -Wextra -Wpedantic)
+  add_test(NAME read_only_register_poller COMMAND test_read_only_register_poller)
+  set_tests_properties(read_only_register_poller PROPERTIES TIMEOUT 5)
+
+  add_executable(test_read_only_status_adapter test/read_only_status_adapter_test.cpp)
+  target_link_libraries(test_read_only_status_adapter
+    onrobot_read_only_status_adapter Threads::Threads)
+  ament_target_dependencies(test_read_only_status_adapter
+    rclcpp onrobot_msgs diagnostic_msgs)
+  target_compile_options(test_read_only_status_adapter PRIVATE -Wall -Wextra -Wpedantic)
+  add_test(NAME read_only_status_adapter COMMAND test_read_only_status_adapter)
+  set_tests_properties(read_only_status_adapter PROPERTIES TIMEOUT 10)
 endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(modbus)
 ament_export_targets(export_onrobot_control HAS_LIBRARY_TARGET)
+ament_export_dependencies(rclcpp rcl_interfaces onrobot_msgs diagnostic_msgs)
 
 ament_package()

@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    enabled: false
+    model: "rg2"
+    host: ""
+    port: 502
+    unit_id: 255
+    start_address: 0
+    register_count: 1
+    poll_interval_ms: 1000
+    response_timeout_ms: 500
+    connect_timeout_ms: 500

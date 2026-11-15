@@ -2,17 +2,19 @@
 
 These RG/VG control, Modbus, and shared-header trees were moved from the
 pinned Kinisi snapshot at `a83cd730e33828abf4e2c22fb0fe3c9c522a8ec4` for
-later refactoring into `onrobot_control`. Their original package manifests,
-launch files, and source layout are retained for reference. The upstream MIT
-notice is in this directory's `LICENSE`.
+later refactoring into `onrobot_control`. The complete upstream snapshot is
+preserved under `onrobot_ros/upstream/kinisi-a83cd73`; this directory keeps the
+remaining protocol references. The upstream MIT notice is in this directory's
+`LICENSE`.
 
-These files are not installed or run by the active package. They include
-Humble-era Python code using the obsolete `pymodbus.client.sync` API and an RG
-Compute Box power-cycle write path. Do not enable either on hardware before
-reviewing it against the exact device firmware, vendor documentation, and
-safety approval. The active C++ transport remains read-only.
+The legacy ROS-facing RG/VG command servers and status listeners that have
+active C++ replacements were removed to avoid keeping duplicate node
+implementations. The interactive CLI controllers, model-specific Python
+protocol code, and Modbus transports remain here as historical reference; they
+are not installed or run by the active package.
 
-The ROS-facing single and dual RG/VG command services and status listeners
-have C++ replacements in `onrobot_control`. The dual-changer launch starts
-only those ROS nodes; it does not connect to either gripper. The legacy
-dual-changer restart-power service is intentionally not exposed.
+The remaining code includes Humble-era Python using the obsolete
+`pymodbus.client.sync` API and RG Compute Box power-cycle paths. Do not enable
+it on hardware before review against the exact firmware, vendor documentation,
+and owner-approved safety requirements. The active C++ transport remains
+read-only, and the active command servers only publish ROS messages.

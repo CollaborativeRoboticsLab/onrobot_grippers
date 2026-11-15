@@ -28,8 +28,29 @@ colcon test-result --verbose
 
 Start a new terminal or run `source install/setup.bash` after building. The
 control core currently provides serialized, bounded, read-only Modbus TCP
-register access. It has no hardware write path; do not connect it to a gripper
-until the exact firmware protocol and safety setup are approved.
+register access. The ROS polling adapter is disabled by default and publishes
+raw register snapshots without assuming a model-specific map. It has no
+hardware write path; use it with a real device only after verifying the exact
+firmware manual, register range, and owner-approved safety setup.
+
+The adapter requires an explicit parameter file with `enabled: true`, a numeric
+IPv4 endpoint, and a register range taken from the exact firmware manual. It
+publishes `onrobot_msgs/msg/RawRegisterSnapshot` on `raw_registers` and standard
+`diagnostic_msgs/msg/DiagnosticArray` messages on `diagnostics`. Device and
+endpoint parameters are read-only after startup. Register values remain raw
+16-bit words; RG/VG status decoding is intentionally not inferred.
+
+```bash
+ros2 launch onrobot_control read_only_status_adapter.launch.py \
+	namespace:=cell_a params_file:=/path/to/read_only_adapter.yaml
+```
+
+The installed example parameters leave polling disabled and the host empty.
+The transport accepts numeric IPv4 addresses only. Polling, connect, and
+response waits have configured upper bounds. Polling runs outside ROS callbacks;
+shutdown may wait up to the configured response timeout for an in-flight read.
+The node only reads holding registers; it exposes no command input and performs
+no register writes.
 
 The single and dual RG command servers select gripper models at startup.
 Their `gripper_model`, `gripper_primary`, and `gripper_secondary` parameters
@@ -67,6 +88,7 @@ Compute Box on a reachable network. It runs in privileged mode, requests all
 GPUs, adds host group ID `992`, forwards `DISPLAY`, and bind-mounts the host's
 `~/.bash_history` and this repository's `.vscode` directory. These settings
 grant broad host access and share shell history with the container; use them
+only with trusted code and networks and choose `ROS_DOMAIN_ID` appropriately.
 Before opening the container, ensure the bind-mount sources exist:
 
 ```bash

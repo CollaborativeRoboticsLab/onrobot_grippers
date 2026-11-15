@@ -34,13 +34,14 @@ legacy power-cycle service remains disabled.
 
 ## ROS adapter and validation
 
-- [ ] Build an independently testable hardware ROS adapter with model and
-  endpoint parameters, diagnostics, configurable polling, bounded execution,
-  and orderly shutdown. Reject invalid or unsupported commands before I/O.
-- [ ] Test a fake endpoint for success, rejection, faults, disconnect/reconnect,
-  timeout, cancellation, shutdown, multiple namespaces, and responsive callbacks.
-  Never automatically replay commands after reconnect or equate transport
-  success with physical motion.
+- [x] Add a disabled-by-default, independently testable read-only ROS adapter
+  with model and endpoint parameters, diagnostics, configurable polling,
+  bounded execution, orderly shutdown, and startup validation before I/O.
+- [x] Cover fake-backed config rejection, disabled startup, read faults and
+  timeout, reconnect, raw snapshots, multiple namespaces, responsive callbacks,
+  and orderly shutdown. There is no command input or physical motion claim.
+- [ ] Before adding any command/action path, define and test command
+  cancellation and replay semantics against the verified firmware protocol.
 - [ ] After owner approval and a risk assessment, validate the exact hardware and
   firmware on an isolated, supervised setup with conservative verified limits
   and an independent emergency stop. Start read-only, then use individually
@@ -48,7 +49,7 @@ legacy power-cycle service remains disabled.
   automatic hardware tests out of normal CI.
 - [ ] Add each RG6, VG, or other device only with its own evidence, capability
   matrix, fake tests, and hardware acceptance. Scope dual hardware, robot
-  integration, RViz, simulation, MoveIt, and ros2_control separately.
+  integration, and ros2_control separately.
 
 ## Engineering and review
 
@@ -60,9 +61,10 @@ legacy power-cycle service remains disabled.
   not a safety-rated emergency stop, and simulation does not validate safety.
 - [ ] Test overflow, rounding, out-of-range values, and NaN/Inf. Declare
   dependencies, document verified versions, and keep optional tools separate.
-- [ ] Add CI for clean Jazzy builds, lint, unit tests, fake-backed integration
-  tests, and `colcon test-result --verbose`, without connecting to hardware.
-  Document commands, parameters, examples, limitations, and failure modes.
+- [x] Add hardware-free CI for clean Jazzy builds, C++ formatting, unit and
+  fake-backed integration tests, and `colcon test-result --verbose`.
+- [x] Document adapter launch, parameters, topics, disabled default, and
+  read-only/raw-data limitations.
 - [ ] Before review, provide a per-phase change summary, provenance, test
   results, supported model/firmware matrix, unresolved safety assumptions, and
   hardware evidence. Trace validation through transport, feedback, recovery,
