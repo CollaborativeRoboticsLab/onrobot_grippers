@@ -165,6 +165,7 @@ private:
     }
     if (!state_received_ || SteadyClock::now() - last_state_receipt_ > std::chrono::seconds(1))
     {
+      publish_joint_command(current_joint_position_);
       active_goal_->abort(result);
       active_goal_.reset();
       return;
@@ -185,6 +186,7 @@ private:
     }
     if (SteadyClock::now() - goal_start_ > goal_timeout_)
     {
+      publish_joint_command(current_joint_position_);
       active_goal_->abort(result);
       active_goal_.reset();
     }

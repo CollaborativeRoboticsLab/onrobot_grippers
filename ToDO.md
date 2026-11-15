@@ -1,88 +1,46 @@
-# Remaining work: ROS 2 Jazzy OnRobot stack
+# Remaining hardware work: ROS 2 Jazzy OnRobot stack
 
-This is not a claim that the protocol or hardware has been validated. RG2 is
-the first acceptance target; RG6 and other devices are follow-up targets.
-Hardware-facing RG and typed VG action endpoints reject all goals because
-there is no verified execution/feedback backend. RG Gazebo has a separate
-position-only simulation bridge; VG Gazebo remains fixed-link visualization.
-The transport is read-only, and the legacy power-cycle service remains disabled.
+This checklist covers device-specific evidence and physical acceptance only.
+It is not a claim that the protocol or hardware has been validated. Hardware-
+facing RG and VG action endpoints reject all goals because no verified hardware
+execution and feedback backend is connected. The transport remains read-only;
+the RG Gazebo bridge is position-only simulation and does not validate physical
+behavior or safety.
 
-## Protocol and safety prerequisites
+## RG2 acceptance gate
 
-- [ ] Obtain the exact RG2 and Compute Box firmware versions, vendor manual
-  revision, network and tool-changer topology, intended ROS consumers, hardware
-  access, and owner-approved risk assessment.
-- [ ] Verify addressing, register maps, scaling, units, limits, status bits,
-  command sequencing, and the support and safety of stop, cancellation, vacuum
-  release, and power reset. Do not assume maps or semantics are shared across
-  models or firmware.
-- [ ] Record a traceable model/firmware capability matrix, evidence, and
-  unsupported combinations. Obtain owner approval before implementing or
-  enabling hardware writes. Unknown details block hardware writes.
+- [ ] Record the exact RG2 and Compute Box models, hardware revisions, serial
+  numbers, firmware versions, vendor manual revisions, network and tool-changer
+  topology, intended ROS consumers, and accountable device owner.
+- [ ] Complete a traceable record for this exact combination using the
+  [hardware capability and validation matrix](docs/hardware-capability-matrix.md).
+  Cite primary-source evidence for addressing, register maps, encoding, units,
+  scaling, limits, status flags, command sequencing, feedback, and recovery.
+  Mark unknown behavior as unsupported; do not infer semantics from another
+  model or firmware.
+- [ ] Obtain an owner-approved risk assessment and written authorization before
+  any hardware write or motion. Confirm the isolated test setup, supervision,
+  verified conservative limits, and independent emergency stop.
+- [ ] Verify device-specific stop, cancellation, command replay, timeout,
+  communication-loss, and recovery behavior. Verify power-reset and vacuum-
+  release behavior only if applicable and explicitly authorized.
+- [ ] After approval, begin with read-only checks. Perform only individually
+  authorized hardware tests under the approved procedure; record firmware,
+  configuration, raw observations, outcomes, errors, and recovery in the matrix.
+  Do not add automatic physical-device tests to normal CI.
+- [ ] Review the evidence and obtain explicit owner approval for each supported
+  capability before enabling any hardware execution path. Until then, keep
+  action goals rejected and the transport read-only.
 
-## Interfaces and offline core
+## Additional devices
 
-- [ ] Verify imported message semantics against the selected firmware. Define
-  typed interfaces, units, bounds, outcomes, namespaces, timestamps, versioning,
-  ownership, concurrency, feedback, timeouts, and cancellation.
-- [x] Adopt `control_msgs/action/GripperCommand` for the RG API scaffold and
-  declare the Jazzy dependency. The current server validates SI goal bounds and
-  rejects execution while no feedback backend exists.
-- [ ] Establish verified hardware conversions, truthful effort/stall/result
-  semantics, goal concurrency, timeout, and cancellation behavior before
-  accepting RG action goals.
-- [ ] Add firmware-backed model-specific protocol vectors, status decoding, and
-  deterministic offline tests, including malformed responses. Do not add writes
-  before the protocol and safety gates are met.
+- [ ] Validate RG6, VG, and any other device as separate model/firmware
+  combinations, each with its own vendor evidence, capability record, risk
+  approval, and supervised hardware acceptance. Do not assume RG2 behavior
+  applies to another model.
+- [ ] Scope dual-gripper hardware, robot integration, and ros2_control support
+  separately; require device-specific evidence and approval for each.
 
-## ROS adapter and validation
-
-- [x] Add a disabled-by-default, independently testable read-only ROS adapter
-  with model and endpoint parameters, diagnostics, configurable polling,
-  bounded execution, orderly shutdown, and startup validation before I/O.
-- [x] Cover fake-backed config rejection, disabled startup, read faults and
-  timeout, reconnect, raw snapshots, multiple namespaces, responsive callbacks,
-  and orderly shutdown. There is no command input or physical motion claim.
-- [ ] Before enabling action execution, define and test cancellation, command
-  replay, and stop semantics against the verified firmware protocol.
-- [ ] After owner approval and a risk assessment, validate the exact hardware and
-  firmware on an isolated, supervised setup with conservative verified limits
-  and an independent emergency stop. Start read-only, then use individually
-  authorized motions; record versions, results, errors, and recovery. Keep
-  automatic hardware tests out of normal CI.
-- [ ] Add each RG6, VG, or other device only with its own evidence, capability
-  matrix, fake tests, and hardware acceptance. Scope dual hardware, robot
-  integration, and ros2_control separately.
-
-## Engineering and review
-
-- [ ] Prefer explicit state machines and typed commands. Specify simultaneous
-  goal handling, avoid indefinitely blocking callbacks, and use SI units at ROS
-  interfaces with conversions at the protocol boundary.
-- [ ] Treat communication failure as unknown physical state. Do not claim
-  cancellation physically stops the device without evidence; software stop is
-  not a safety-rated emergency stop, and simulation does not validate safety.
-- [ ] Test overflow, rounding, out-of-range values, and NaN/Inf. Declare
-  dependencies, document verified versions, and keep optional tools separate.
-- [x] Add hardware-free CI for clean Jazzy builds, C++ formatting, unit and
-  fake-backed integration tests, and `colcon test-result --verbose`.
-- [x] Document adapter launch, parameters, topics, disabled default, and
-  read-only/raw-data limitations.
-- [ ] Before review, provide a per-phase change summary, provenance, test
-  results, supported model/firmware matrix, unresolved safety assumptions, and
-  hardware evidence. Trace validation through transport, feedback, recovery,
-  lifecycle, and multi-instance behavior.
-
-## Reference and provenance notes
-
-The Kinisi snapshot at `a83cd730e33828abf4e2c22fb0fe3c9c522a8ec4` was
-reviewed as a ROS 2 Humble reference, not a verified Jazzy or protocol authority.
-The upstream MIT notice must be preserved for adopted material. The legacy
-Python transports use an obsolete `pymodbus.client.sync` API and include an
-unapproved power-cycle path. Mesh provenance and model accuracy remain
-unverified; do not copy assets without checking their separate rights.
-
-See [the secondary upstream comparison](docs/upstream-comparison.md) for
-checked revisions, licenses, and reuse decisions. No cwsfa code or decoded
-content was retained without redistribution permission. Review licenses and
-record exact source revisions before adopting any community material.
+Communication failure means the physical state is unknown. Software
+cancellation is not a safety-rated emergency stop, and simulation does not
+validate physical behavior or safety.
