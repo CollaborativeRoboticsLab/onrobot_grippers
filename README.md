@@ -10,7 +10,8 @@ work.
 Open this repository in VS Code and select **Dev Containers: Reopen in Container**.
 The image uses ROS 2 Jazzy on Ubuntu 24.04, Python and C++ build tools, colcon,
 rosdep, pytest, Xacro, Gazebo Harmonic through `ros_gz`, `gz_ros2_control`, and
-libmodbus 3.1.10. The repository is mounted under `~/colcon_ws/src/`; the
+libmodbus 3.1.10. It also includes `control_msgs` for the standard RG action.
+The repository is mounted under `~/colcon_ws/src/`; the
 VS Code workspace opens at `~/colcon_ws` so that sibling packages can be added.
 New interactive Bash terminals source the workspace overlay if built, or the
 Jazzy underlay otherwise.
@@ -52,9 +53,32 @@ shutdown may wait up to the configured response timeout for an in-flight read.
 The node only reads holding registers; it exposes no command input and performs
 no register writes.
 
-The single and dual RG command servers select gripper models at startup.
-Their `gripper_model`, `gripper_primary`, and `gripper_secondary` parameters
-are read-only at runtime; restart the corresponding node to change a model.
+The single RG server exposes `control_msgs/action/GripperCommand` at
+`onrobot_rg/gripper_command`; the dual server exposes the `_A` and `_B` action
+names. RG action positions are in meters and max effort is in newtons. The VG
+server exposes `onrobot_msgs/action/VGCommand`, with separate mode and vacuum
+percentage targets for both channels. Hardware-facing action servers reject
+all goals because no verified hardware execution or feedback backend is
+connected. `SetCommand.srv` remains generated only for compatibility and has no
+active service server.
+
+Gazebo RG2/RG6 launches start a separate simulation action bridge at
+`/onrobot_rg2/gripper_command` or `/onrobot_rg6/gripper_command`. It maps
+aperture linearly to the simulated revolute finger joint and waits for joint
+feedback before completing a goal. This is a visualization/control
+approximation, not a firmware or calibrated aperture model. The simulator does
+not model gripper effort limits, so send `max_effort: 0`; positive effort goals
+are rejected. VG10/VGC10 are fixed-link models with no suction or vacuum
+dynamics, so their action goals remain unavailable in simulation.
+
+The status listeners publish measured RG aperture on `rg_aperture/joint_states`
+as a `sensor_msgs/msg/JointState` virtual prismatic coordinate in meters. The
+default names are `rg_aperture`, `primary_rg_aperture`, and
+`secondary_rg_aperture`; they can be overridden with read-only parameters.
+These are aperture coordinates, not the revolute finger-joint positions in the
+current URDF. Consumers must provide a matching virtual joint before using
+these messages as robot-model joint state. Vendor status flags remain in the
+OnRobot-specific input messages.
 
 The `onrobot_gazebo` package launches RG2, RG6, VG10, or the four-cup VGC10 in
 Gazebo Harmonic. RG2 and RG6 use ROS 2 control; VG10 and VGC10 are fixed-link

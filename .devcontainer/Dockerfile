@@ -21,6 +21,7 @@ RUN apt-get update \
         python3-venv \
         python3-vcstool \
         ros-jazzy-gz-ros2-control \
+        ros-jazzy-control-msgs \
         ros-jazzy-diagnostic-msgs \
         ros-jazzy-joint-state-publisher-gui \
         ros-jazzy-moveit \

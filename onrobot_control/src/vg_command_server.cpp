@@ -1,53 +1,41 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
-#include <string>
+#include <rclcpp_action/rclcpp_action.hpp>
 
-#include "onrobot_control/command_codec.hpp"
-#include "onrobot_msgs/msg/on_robot_vg_output.hpp"
-#include "onrobot_msgs/srv/set_command.hpp"
+#include "onrobot_msgs/action/vg_command.hpp"
 
 class VgCommandServer final : public rclcpp::Node
 {
 public:
+  using Action = onrobot_msgs::action::VGCommand;
+  using GoalHandle = rclcpp_action::ServerGoalHandle<Action>;
+
   VgCommandServer() : Node("onrobot_vg_command_server")
   {
-    publisher_ = create_publisher<onrobot_msgs::msg::OnRobotVGOutput>("OnRobotVGOutput", 1);
-    service_ = create_service<onrobot_msgs::srv::SetCommand>(
-        "onrobot_vg/set_command", [this](const std::shared_ptr<onrobot_msgs::srv::SetCommand::Request> request,
-                                         std::shared_ptr<onrobot_msgs::srv::SetCommand::Response> response) {
-          handle_command(request, response);
-        });
-    RCLCPP_INFO(get_logger(), "Publishing VG command messages only; hardware transport is not enabled");
+    action_server_ = rclcpp_action::create_server<Action>(
+        this, "onrobot_vg/command",
+        [this](const rclcpp_action::GoalUUID&, std::shared_ptr<const Action::Goal> goal) { return handle_goal(goal); },
+        [](const std::shared_ptr<GoalHandle>&) { return rclcpp_action::CancelResponse::REJECT; },
+        [](const std::shared_ptr<GoalHandle>&) {});
+    RCLCPP_WARN(get_logger(), "VG action is offline-only; goals are rejected until a verified execution backend "
+                              "exists");
   }
 
 private:
-  void handle_command(const std::shared_ptr<onrobot_msgs::srv::SetCommand::Request>& request,
-                      const std::shared_ptr<onrobot_msgs::srv::SetCommand::Response>& response)
+  rclcpp_action::GoalResponse handle_goal(const std::shared_ptr<const Action::Goal>& goal) const
   {
-    const auto parsed = onrobot_control::parse_vg_command(
-        request->command, { command_.r_mca, command_.r_vca, command_.r_mcb, command_.r_vcb });
-    if (!parsed.valid())
+    if (goal->mode_a > 2 || goal->mode_b > 2 || goal->target_vacuum_a_percent > 80 ||
+        goal->target_vacuum_b_percent > 80)
     {
-      response->success = false;
-      response->message = parsed.error == onrobot_control::CommandError::out_of_range ? "Vacuum must be between 0 and "
-                                                                                        "80" :
-                                                                                        "Use g, r, ga, ra, gb, rb, or "
-                                                                                        "a numeric vacuum value";
-      return;
+      RCLCPP_WARN(get_logger(), "Rejecting VG goal outside supported mode or vacuum limits");
+      return rclcpp_action::GoalResponse::REJECT;
     }
 
-    command_.r_mca = parsed.command->mode_a;
-    command_.r_vca = parsed.command->vacuum_a;
-    command_.r_mcb = parsed.command->mode_b;
-    command_.r_vcb = parsed.command->vacuum_b;
-    publisher_->publish(command_);
-    response->success = true;
-    response->message = "VG command published; no hardware write was performed";
+    RCLCPP_WARN(get_logger(), "Rejecting VG goal because no verified execution and feedback backend is configured");
+    return rclcpp_action::GoalResponse::REJECT;
   }
 
-  onrobot_msgs::msg::OnRobotVGOutput command_;
-  rclcpp::Publisher<onrobot_msgs::msg::OnRobotVGOutput>::SharedPtr publisher_;
-  rclcpp::Service<onrobot_msgs::srv::SetCommand>::SharedPtr service_;
+  rclcpp_action::Server<Action>::SharedPtr action_server_;
 };
 
 int main(int argc, char** argv)

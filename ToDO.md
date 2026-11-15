@@ -2,9 +2,10 @@
 
 This is not a claim that the protocol or hardware has been validated. RG2 is
 the first acceptance target; RG6 and other devices are follow-up targets.
-The current command services publish ROS messages only, and the transport is
-read-only. The dual-gripper launch does not connect to a changer, and the
-legacy power-cycle service remains disabled.
+Hardware-facing RG and typed VG action endpoints reject all goals because
+there is no verified execution/feedback backend. RG Gazebo has a separate
+position-only simulation bridge; VG Gazebo remains fixed-link visualization.
+The transport is read-only, and the legacy power-cycle service remains disabled.
 
 ## Protocol and safety prerequisites
 
@@ -24,10 +25,12 @@ legacy power-cycle service remains disabled.
 - [ ] Verify imported message semantics against the selected firmware. Define
   typed interfaces, units, bounds, outcomes, namespaces, timestamps, versioning,
   ownership, concurrency, feedback, timeouts, and cancellation.
-- [ ] Evaluate `control_msgs/action/GripperCommand` for RG2. If adopted, declare
-  the dependency and verify a clean Jazzy build; establish bounds, conversions,
-  truthful feedback/result flags, and failure and concurrent-goal semantics
-  from the verified protocol before implementing the adapter.
+- [x] Adopt `control_msgs/action/GripperCommand` for the RG API scaffold and
+  declare the Jazzy dependency. The current server validates SI goal bounds and
+  rejects execution while no feedback backend exists.
+- [ ] Establish verified hardware conversions, truthful effort/stall/result
+  semantics, goal concurrency, timeout, and cancellation behavior before
+  accepting RG action goals.
 - [ ] Add firmware-backed model-specific protocol vectors, status decoding, and
   deterministic offline tests, including malformed responses. Do not add writes
   before the protocol and safety gates are met.
@@ -40,8 +43,8 @@ legacy power-cycle service remains disabled.
 - [x] Cover fake-backed config rejection, disabled startup, read faults and
   timeout, reconnect, raw snapshots, multiple namespaces, responsive callbacks,
   and orderly shutdown. There is no command input or physical motion claim.
-- [ ] Before adding any command/action path, define and test command
-  cancellation and replay semantics against the verified firmware protocol.
+- [ ] Before enabling action execution, define and test cancellation, command
+  replay, and stop semantics against the verified firmware protocol.
 - [ ] After owner approval and a risk assessment, validate the exact hardware and
   firmware on an isolated, supervised setup with conservative verified limits
   and an independent emergency stop. Start read-only, then use individually

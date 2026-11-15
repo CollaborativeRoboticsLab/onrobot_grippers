@@ -4,7 +4,11 @@ project(onrobot_control LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(rcl_interfaces REQUIRED)
+find_package(control_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(onrobot_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(Threads REQUIRED)
@@ -39,23 +43,27 @@ ament_target_dependencies(onrobot_read_only_status_adapter_node rclcpp)
 
 add_executable(onrobot_rg_command_server src/rg_command_server.cpp)
 target_link_libraries(onrobot_rg_command_server onrobot_control_core)
-ament_target_dependencies(onrobot_rg_command_server rclcpp rcl_interfaces onrobot_msgs)
+ament_target_dependencies(onrobot_rg_command_server rclcpp rclcpp_action rcl_interfaces control_msgs)
+
+add_executable(onrobot_simulated_rg_action_server src/simulated_rg_action_server.cpp)
+target_link_libraries(onrobot_simulated_rg_action_server onrobot_control_core)
+ament_target_dependencies(onrobot_simulated_rg_action_server rclcpp rclcpp_action control_msgs sensor_msgs std_msgs)
 
 add_executable(onrobot_vg_command_server src/vg_command_server.cpp)
 target_link_libraries(onrobot_vg_command_server onrobot_control_core)
-ament_target_dependencies(onrobot_vg_command_server rclcpp onrobot_msgs)
+ament_target_dependencies(onrobot_vg_command_server rclcpp rclcpp_action onrobot_msgs)
 
 add_executable(onrobot_status_listener src/status_listener.cpp)
 target_link_libraries(onrobot_status_listener onrobot_control_core)
-ament_target_dependencies(onrobot_status_listener rclcpp onrobot_msgs)
+ament_target_dependencies(onrobot_status_listener rclcpp onrobot_msgs sensor_msgs)
 
 add_executable(onrobot_rg_dual_command_server src/rg_dual_command_server.cpp)
 target_link_libraries(onrobot_rg_dual_command_server onrobot_control_core)
-ament_target_dependencies(onrobot_rg_dual_command_server rclcpp rcl_interfaces onrobot_msgs)
+ament_target_dependencies(onrobot_rg_dual_command_server rclcpp rclcpp_action rcl_interfaces control_msgs)
 
 add_executable(onrobot_dual_status_listener src/dual_status_listener.cpp)
 target_link_libraries(onrobot_dual_status_listener onrobot_control_core)
-ament_target_dependencies(onrobot_dual_status_listener rclcpp onrobot_msgs)
+ament_target_dependencies(onrobot_dual_status_listener rclcpp onrobot_msgs sensor_msgs)
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES LICENSE DESTINATION share/${PROJECT_NAME})
@@ -71,6 +79,7 @@ install(TARGETS
   onrobot_read_only_status_adapter
   onrobot_read_only_status_adapter_node
   onrobot_rg_command_server
+  onrobot_simulated_rg_action_server
   onrobot_vg_command_server
   onrobot_status_listener
   onrobot_rg_dual_command_server
@@ -80,10 +89,12 @@ install(TARGETS
 
 if(BUILD_TESTING)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  add_test(NAME rg_model_parameters
+  add_test(NAME control_api_and_joint_state
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/rg_model_parameters_test.py
-      $<TARGET_FILE:onrobot_rg_command_server> $<TARGET_FILE:onrobot_rg_dual_command_server>)
-  set_tests_properties(rg_model_parameters PROPERTIES TIMEOUT 90)
+      $<TARGET_FILE:onrobot_rg_command_server> $<TARGET_FILE:onrobot_rg_dual_command_server>
+      $<TARGET_FILE:onrobot_vg_command_server> $<TARGET_FILE:onrobot_status_listener>
+      $<TARGET_FILE:onrobot_dual_status_listener> $<TARGET_FILE:onrobot_simulated_rg_action_server>)
+  set_tests_properties(control_api_and_joint_state PROPERTIES TIMEOUT 90)
 
   add_executable(test_command_validation test/command_validation_test.cpp)
   target_link_libraries(test_command_validation PRIVATE onrobot_control_core)

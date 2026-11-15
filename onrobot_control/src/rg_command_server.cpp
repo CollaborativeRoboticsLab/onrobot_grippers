@@ -1,18 +1,20 @@
+#include <control_msgs/action/gripper_command.hpp>
 #include <cstdint>
 #include <memory>
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <stdexcept>
 #include <string>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rcl_interfaces/msg/parameter_descriptor.hpp>
-
-#include "onrobot_control/command_codec.hpp"
-#include "onrobot_msgs/msg/on_robot_rg_output.hpp"
-#include "onrobot_msgs/srv/set_command.hpp"
+#include "onrobot_control/gripper_goal_validation.hpp"
 
 class RgCommandServer final : public rclcpp::Node
 {
 public:
+  using Action = control_msgs::action::GripperCommand;
+  using GoalHandle = rclcpp_action::ServerGoalHandle<Action>;
+
   RgCommandServer() : Node("onrobot_rg_command_server")
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -26,44 +28,30 @@ public:
     }
     limits_ = *limits;
 
-    publisher_ = create_publisher<onrobot_msgs::msg::OnRobotRGOutput>("OnRobotRGOutput", 1);
-    service_ = create_service<onrobot_msgs::srv::SetCommand>(
-      "onrobot_rg/set_command",
-      [this](const std::shared_ptr<onrobot_msgs::srv::SetCommand::Request> request,
-             std::shared_ptr<onrobot_msgs::srv::SetCommand::Response> response) {
-        handle_command(request, response);
-      });
-    RCLCPP_INFO(get_logger(), "Publishing RG command messages only; hardware transport is not enabled");
+    action_server_ = rclcpp_action::create_server<Action>(
+        this, "onrobot_rg/gripper_command",
+        [this](const rclcpp_action::GoalUUID&, std::shared_ptr<const Action::Goal> goal) { return handle_goal(goal); },
+        [](const std::shared_ptr<GoalHandle>&) { return rclcpp_action::CancelResponse::REJECT; },
+        [](const std::shared_ptr<GoalHandle>&) {});
+    RCLCPP_WARN(get_logger(), "RG action is offline-only; goals are rejected until a verified execution backend "
+                              "exists");
   }
 
 private:
-  void handle_command(
-    const std::shared_ptr<onrobot_msgs::srv::SetCommand::Request>& request,
-    const std::shared_ptr<onrobot_msgs::srv::SetCommand::Response>& response)
+  rclcpp_action::GoalResponse handle_goal(const std::shared_ptr<const Action::Goal>& goal) const
   {
-    const auto parsed = onrobot_control::parse_rg_command(
-      request->command, { command_.r_gfr, command_.r_gwd, command_.r_ctr }, limits_);
-    if (!parsed.valid())
+    if (!onrobot_control::rg_gripper_goal_within_limits(goal->command.position, goal->command.max_effort, limits_))
     {
-      response->success = false;
-      response->message = parsed.error == onrobot_control::CommandError::out_of_range
-        ? "Width exceeds model maximum of " + std::to_string(limits_.max_width)
-        : "Use c, o, i, d, or a numeric gripper width";
-      return;
+      RCLCPP_WARN(get_logger(), "Rejecting RG goal outside the configured position or effort limits");
+      return rclcpp_action::GoalResponse::REJECT;
     }
 
-    command_.r_gfr = parsed.command->force;
-    command_.r_gwd = parsed.command->width;
-    command_.r_ctr = parsed.command->control;
-    publisher_->publish(command_);
-    response->success = true;
-    response->message = "RG command published; no hardware write was performed";
+    RCLCPP_WARN(get_logger(), "Rejecting RG goal because no verified execution and feedback backend is configured");
+    return rclcpp_action::GoalResponse::REJECT;
   }
 
   onrobot_control::RgLimits limits_{ 0, 0 };
-  onrobot_msgs::msg::OnRobotRGOutput command_;
-  rclcpp::Publisher<onrobot_msgs::msg::OnRobotRGOutput>::SharedPtr publisher_;
-  rclcpp::Service<onrobot_msgs::srv::SetCommand>::SharedPtr service_;
+  rclcpp_action::Server<Action>::SharedPtr action_server_;
 };
 
 int main(int argc, char** argv)

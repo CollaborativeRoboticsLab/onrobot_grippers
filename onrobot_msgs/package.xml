@@ -2,7 +2,7 @@
 <package format="3">
   <name>onrobot_msgs</name>
   <version>0.1.0</version>
-  <description>Combined ROS 2 messages and services for OnRobot RG and VG grippers</description>
+  <description>ROS 2 messages and actions for OnRobot RG and VG grippers</description>
   <maintainer email="kalanaratnayake95@gmail.com">Kalana Ratnayake</maintainer>
   <author email="kiyokawa@hlab.sys.es.osaka-u.ac.jp">Takuya Kiyokawa</author>
   <license>MIT</license>

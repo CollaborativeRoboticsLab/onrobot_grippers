@@ -11,6 +11,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/OnRobotRGOutput.msg"
   "msg/OnRobotVGInput.msg"
   "msg/OnRobotVGOutput.msg"
+  "action/VGCommand.action"
   "srv/SetCommand.srv"
   DEPENDENCIES std_msgs
 )

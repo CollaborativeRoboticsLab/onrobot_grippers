@@ -1,0 +1,20 @@
+# Control modes for each VG channel.
+uint8 RELEASE=0
+uint8 GRIP=1
+uint8 IDLE=2
+
+# Mode and target vacuum percentage for channel A. Target is used only in GRIP mode.
+uint8 mode_a
+uint8 target_vacuum_a_percent
+
+# Mode and target vacuum percentage for channel B. Target is used only in GRIP mode.
+uint8 mode_b
+uint8 target_vacuum_b_percent
+---
+# Raw measured vacuum values from the device, in thousandths of relative vacuum.
+uint16 measured_vacuum_a_milli_relative
+uint16 measured_vacuum_b_milli_relative
+---
+# Latest raw measured vacuum values while the goal is executing.
+uint16 measured_vacuum_a_milli_relative
+uint16 measured_vacuum_b_milli_relative

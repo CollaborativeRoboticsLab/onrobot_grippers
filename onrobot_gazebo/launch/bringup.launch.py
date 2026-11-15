@@ -116,11 +116,18 @@ def launch_setup(context, *args, **kwargs):
             ],
             output="screen",
         )
+        simulated_action_server = Node(
+            package="onrobot_control",
+            executable="onrobot_simulated_rg_action_server",
+            namespace=model_name,
+            parameters=[{"model": gripper, "use_sim_time": True}],
+            output="screen",
+        )
         spawn_actions = [
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=spawn_gripper,
-                    on_exit=[joint_state_spawner, position_spawner],
+                    on_exit=[joint_state_spawner, position_spawner, simulated_action_server],
                 )
             ),
             spawn_gripper,

@@ -26,8 +26,16 @@ jobs:
             onrobot_control/include/onrobot_control/modbus_tcp_transport.hpp \
             onrobot_control/include/onrobot_control/read_only_register_poller.hpp \
             onrobot_control/include/onrobot_control/read_only_status_adapter.hpp \
+            onrobot_control/include/onrobot_control/gripper_goal_validation.hpp \
+            onrobot_control/src/rg_command_server.cpp \
+            onrobot_control/src/rg_dual_command_server.cpp \
+            onrobot_control/src/vg_command_server.cpp \
+            onrobot_control/src/simulated_rg_action_server.cpp \
+            onrobot_control/src/status_listener.cpp \
+            onrobot_control/src/dual_status_listener.cpp \
             onrobot_control/src/read_only_status_adapter.cpp \
             onrobot_control/src/read_only_status_adapter_main.cpp \
+            onrobot_control/test/command_codec_test.cpp \
             onrobot_control/test/read_only_register_poller_test.cpp \
             onrobot_control/test/read_only_status_adapter_test.cpp
       - name: Build workspace
