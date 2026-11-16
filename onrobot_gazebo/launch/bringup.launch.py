@@ -119,8 +119,11 @@ def launch_setup(context, *args, **kwargs):
         simulated_action_server = Node(
             package="onrobot_control",
             executable="onrobot_simulated_rg_action_server",
-            namespace=model_name,
             parameters=[{"model": gripper, "use_sim_time": True}],
+            remappings=[
+                ("joint_position_controller/commands", f"/{model_name}/joint_position_controller/commands"),
+                ("joint_states", f"/{model_name}/joint_states"),
+            ],
             output="screen",
         )
         spawn_actions = [

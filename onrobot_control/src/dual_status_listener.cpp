@@ -20,7 +20,7 @@ public:
         declare_parameter<std::string>("primary_aperture_joint_name", "primary_rg_aperture", joint_name_descriptor);
     secondary_aperture_joint_name_ =
         declare_parameter<std::string>("secondary_aperture_joint_name", "secondary_rg_aperture", joint_name_descriptor);
-    joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("rg_aperture/joint_states", 10);
+    joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("gripper_joint_states", 10);
     primary_subscription_ = create_subscription<onrobot_msgs::msg::OnRobotRGInput>(
         "OnRobotRGInput_A", 10, [this](onrobot_msgs::msg::OnRobotRGInput::ConstSharedPtr status) {
           report("primary", primary_aperture_joint_name_, *status);

@@ -13,7 +13,7 @@ public:
   VgCommandServer() : Node("onrobot_vg_command_server")
   {
     action_server_ = rclcpp_action::create_server<Action>(
-        this, "onrobot_vg/command",
+        this, "gripper_command",
         [this](const rclcpp_action::GoalUUID&, std::shared_ptr<const Action::Goal> goal) { return handle_goal(goal); },
         [](const std::shared_ptr<GoalHandle>&) { return rclcpp_action::CancelResponse::REJECT; },
         [](const std::shared_ptr<GoalHandle>&) {});

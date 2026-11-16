@@ -18,7 +18,7 @@ public:
     joint_name_descriptor.description = "Name of the virtual prismatic RG aperture coordinate";
     joint_name_descriptor.read_only = true;
     aperture_joint_name_ = declare_parameter<std::string>("aperture_joint_name", "rg_aperture", joint_name_descriptor);
-    joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("rg_aperture/joint_states", 10);
+    joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("gripper_joint_states", 10);
     rg_subscription_ = create_subscription<onrobot_msgs::msg::OnRobotRGInput>(
         "OnRobotRGInput", 10, [this](onrobot_msgs::msg::OnRobotRGInput::ConstSharedPtr status) { report_rg(*status); });
     vg_subscription_ = create_subscription<onrobot_msgs::msg::OnRobotVGInput>(

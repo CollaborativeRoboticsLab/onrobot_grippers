@@ -32,7 +32,7 @@ class ModelParameterTest(unittest.TestCase):
         for executable, parameters, namespace in (
             (SINGLE_EXECUTABLE, ['gripper_model:=rg2'], '/parameter_test'),
             (DUAL_EXECUTABLE, ['gripper_primary:=rg6', 'gripper_secondary:=rg2'], '/parameter_test'),
-            (VG_EXECUTABLE, [], '/parameter_test'),
+            (VG_EXECUTABLE, [], '/parameter_test_vg'),
             (STATUS_EXECUTABLE, [], '/parameter_test'),
             (DUAL_STATUS_EXECUTABLE, [], '/parameter_test'),
             (SIM_EXECUTABLE, ['model:=rg2', 'goal_timeout_s:=0.25'], '/parameter_test/sim_rg'),
@@ -63,8 +63,8 @@ class ModelParameterTest(unittest.TestCase):
         self.assertIsNone(future.exception())
         return future.result()
 
-    def send_goal(self, action_type, action_name, goal):
-        client = ActionClient(self.node, action_type, '/parameter_test/' + action_name)
+    def send_goal(self, action_type, action_name, goal, namespace='/parameter_test'):
+        client = ActionClient(self.node, action_type, namespace + '/' + action_name)
         self.addCleanup(self.node.destroy_client, client)
         self.assertTrue(client.wait_for_server(timeout_sec=15), f'{action_name} unavailable')
         future = client.send_goal_async(goal)
@@ -75,7 +75,7 @@ class ModelParameterTest(unittest.TestCase):
 
     def test_models_are_read_only_and_limits_match_startup_models(self):
         cases = (
-            ('onrobot_rg_command_server', 'gripper_model', 'rg2', 'rg6', 'onrobot_rg/gripper_command'),
+            ('onrobot_rg_command_server', 'gripper_model', 'rg2', 'rg6', 'gripper_command'),
             ('onrobot_rg_dual_command_server', 'gripper_primary', 'rg6', 'rg2', 'onrobot_rg/gripper_command_A'),
             ('onrobot_rg_dual_command_server', 'gripper_secondary', 'rg2', 'rg6', 'onrobot_rg/gripper_command_B'),
         )
@@ -109,13 +109,13 @@ class ModelParameterTest(unittest.TestCase):
         goal.target_vacuum_a_percent = 40
         goal.mode_b = 0
         goal.target_vacuum_b_percent = 0
-        response = self.send_goal(VGCommand, 'onrobot_vg/command', goal)
+        response = self.send_goal(VGCommand, 'gripper_command', goal, '/parameter_test_vg')
         self.assertFalse(response.accepted, 'VG goal must not be sent without a verified hardware backend')
 
     def test_rg_aperture_is_published_as_joint_state_in_meters(self):
         received = {}
         subscription = self.node.create_subscription(
-            JointState, '/parameter_test/rg_aperture/joint_states', lambda message: received.update(
+            JointState, '/parameter_test/gripper_joint_states', lambda message: received.update(
                 zip(message.name, message.position)), 10)
         self.addCleanup(self.node.destroy_subscription, subscription)
 

@@ -51,7 +51,7 @@ public:
     goal_timeout_ = std::chrono::duration<double>(goal_timeout_s);
 
     command_publisher_ = create_publisher<std_msgs::msg::Float64MultiArray>("joint_position_controller/commands", 10);
-    aperture_publisher_ = create_publisher<sensor_msgs::msg::JointState>("rg_aperture/joint_states", 10);
+    aperture_publisher_ = create_publisher<sensor_msgs::msg::JointState>("gripper_joint_states", 10);
     joint_state_subscription_ = create_subscription<sensor_msgs::msg::JointState>(
         "joint_states", 10, [this](sensor_msgs::msg::JointState::ConstSharedPtr state) { handle_joint_state(*state); });
     action_server_ = rclcpp_action::create_server<Action>(
